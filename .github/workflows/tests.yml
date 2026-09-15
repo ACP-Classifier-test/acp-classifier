@@ -1,0 +1,71 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # El modelo ESM-2 8M (~31 MB) se descarga de HuggingFace en la primera
+      # ejecución. Se cachea para no volver a bajarlo en cada corrida.
+      - name: Caché del modelo ESM-2
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-esm2-8m-${{ runner.os }}
+
+      # La rueda de PyPI arrastra CUDA (~2 GB). En CI basta la variante de CPU.
+      - name: Instalar PyTorch (CPU)
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Instalar el paquete
+        run: pip install -e ".[dev]"
+
+      - name: Ejecutar las pruebas
+        run: pytest -q
+
+      - name: Comprobar la CLI de extremo a extremo
+        run: |
+          acp-classifier --version
+          acp-classifier -i examples/ejemplo.fasta -o /tmp/salida.csv
+          head -n 3 /tmp/salida.csv
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Construir la distribución
+        run: |
+          pip install build twine
+          python -m build
+
+      - name: Validar los metadatos del paquete
+        run: twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

@@ -1,0 +1,14 @@
+name: acp-classifier
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9
+  - numpy>=1.21
+  - scikit-learn>=1.0
+  - joblib>=1.1
+  - pytorch>=1.11
+  - pip
+  - pip:
+      - transformers>=4.20
+      - acp-classifier

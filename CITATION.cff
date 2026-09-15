@@ -1,0 +1,73 @@
+cff-version: 1.2.0
+title: >-
+  acp-classifier: clasificación de péptidos anticancerígenos
+  mediante modelos de lenguaje proteico
+message: >-
+  Si utiliza este software en un trabajo académico, por favor cítelo
+  usando los metadatos de este archivo.
+type: software
+authors:
+  - family-names: Navarro Sinuco
+    given-names: Brayan Arturo
+    affiliation: Universidad Industrial de Santander
+  - family-names: Mendoza Oñate
+    given-names: Ivan Andres
+    affiliation: Universidad Industrial de Santander
+repository-code: https://github.com/uis-eisi/acp-classifier
+license: MIT
+version: 1.0.0
+date-released: "2026-09-07"
+keywords:
+  - bioinformatics
+  - anticancer peptides
+  - protein language models
+  - ESM-2
+  - machine learning
+abstract: >-
+  Herramienta de línea de comandos y biblioteca de Python para clasificar
+  péptidos anticancerígenos (ACPs) a partir de secuencias en formato FASTA.
+  Combina las representaciones contextuales del modelo de lenguaje proteico
+  ESM-2 (variante esm2_t6_8M_UR50D, 320 dimensiones) con un clasificador de
+  Regresión Logística entrenado sobre el conjunto de referencia de
+  mACPpred 2.0. Alcanza un AUC-ROC de 0,8745 sobre el conjunto de prueba
+  independiente de ese benchmark y se ejecuta sin GPU.
+references:
+  - type: article
+    title: >-
+      mACPpred 2.0: Stacked Deep Learning for Anticancer Peptide Prediction
+      with Integrated Spatial and Probabilistic Feature Representations
+    authors:
+      - family-names: Sangaraju
+        given-names: Vinoth Kumar
+      - family-names: Pham
+        given-names: Nhat Truong
+      - family-names: Wei
+        given-names: Leyi
+      - family-names: Yu
+        given-names: Xue
+      - family-names: Manavalan
+        given-names: Balachandran
+    journal: Journal of Molecular Biology
+    volume: "436"
+    issue: "17"
+    start: "168687"
+    year: 2024
+    doi: 10.1016/j.jmb.2024.168687
+  - type: article
+    title: >-
+      Evolutionary-scale prediction of atomic level protein structure with a
+      language model
+    authors:
+      - family-names: Lin
+        given-names: Zeming
+      - family-names: Akin
+        given-names: Halil
+      - family-names: Rao
+        given-names: Roshan
+    journal: Science
+    volume: "379"
+    issue: "6637"
+    start: "1123"
+    end: "1130"
+    year: 2023
+    doi: 10.1126/science.ade2574

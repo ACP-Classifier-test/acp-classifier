@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acp-classifier"
+version = "1.0.0"
+description = "Clasificación de péptidos anticancerígenos (ACPs) mediante modelos de lenguaje proteico"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Brayan Arturo Navarro Sinuco" },
+    { name = "Ivan Andres Mendoza Oñate" },
+]
+maintainers = [
+    { name = "Escuela de Ingeniería de Sistemas e Informática, Universidad Industrial de Santander" },
+]
+keywords = [
+    "bioinformatics", "anticancer-peptides", "acp", "protein-language-model",
+    "esm2", "peptide-classification", "machine-learning",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy>=1.21",
+    "scikit-learn>=1.0",
+    "joblib>=1.1",
+    "torch>=1.11",
+    "transformers>=4.20",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/uis-eisi/acp-classifier"
+Repository = "https://github.com/uis-eisi/acp-classifier"
+Issues = "https://github.com/uis-eisi/acp-classifier/issues"
+
+[project.scripts]
+acp-classifier = "acp_classifier.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+acp_classifier = ["modelos/*.joblib"]
