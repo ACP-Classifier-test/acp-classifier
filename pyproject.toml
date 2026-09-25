@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,8 @@ version = "1.0.0"
 description = "Clasificación de péptidos anticancerígenos (ACPs) mediante modelos de lenguaje proteico"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Brayan Arturo Navarro Sinuco" },
     { name = "Ivan Andres Mendoza Oñate" },
@@ -23,7 +24,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -34,14 +34,13 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.21",
-    "scikit-learn>=1.0",
     "joblib>=1.1",
     "torch>=1.11",
     "transformers>=4.20",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "scikit-learn>=1.0"]
 
 [project.urls]
 Homepage = "https://github.com/uis-eisi/acp-classifier"

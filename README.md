@@ -30,7 +30,11 @@ Evaluado sobre el **conjunto de prueba independiente oficial** de mACPpred 2.0
 | Exactitud | 0.8362 |
 | MCC | 0.5341 |
 
-Como referencia, mACPpred 2.0 reporta un AUC-ROC de 0.817 sobre el mismo conjunto.
+Como referencia, sobre ese mismo conjunto mACPpred 2.0 reporta un AUC-ROC de 0.887 y
+MLACP 2.0 uno de 0.893. Este paquete no supera a ninguna de las dos, pero sí a las otras
+nueve herramientas con AUC-ROC publicado sobre el conjunto —entre ellas mACPpred (0.842),
+iDACP (0.852) y AntiCP 2.0 en su variante alterna (0.835)—, y lo hace con un modelo de ocho
+millones de parámetros y un clasificador lineal, sin GPU en inferencia.
 
 > El conjunto de evaluación está desbalanceado (18,1 % de positivos). Por ese motivo se
 > reporta AUC-ROC como métrica principal, junto con F1 y MCC, y no la exactitud: un

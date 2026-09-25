@@ -27,6 +27,18 @@ class Prediccion:
         return asdict(self)
 
 
+def _probabilidades_desde_pesos(X: np.ndarray, pesos: dict) -> np.ndarray:
+    """Estandariza y aplica la regresión logística a partir de los pesos.
+
+    Equivale a `LogisticRegression.predict_proba` sobre `StandardScaler.transform`,
+    pero sin instanciar objetos de scikit-learn, de modo que la predicción no
+    depende de la versión de la biblioteca que haya instalada.
+    """
+    Z = (np.asarray(X, dtype=np.float64) - pesos["media"]) / pesos["escala"]
+    z = Z @ pesos["coef"] + pesos["intercepto"]
+    return 1.0 / (1.0 + np.exp(-z))
+
+
 class AcpClassifier:
     """Predice actividad anticancerígena a partir de secuencias peptídicas.
 
@@ -43,9 +55,17 @@ class AcpClassifier:
 
     def __init__(self, ruta_modelo: str | Path | None = None):
         artefacto = self._cargar_artefacto(ruta_modelo)
-        self.modelo = artefacto["modelo"]
-        self.scaler = artefacto["scaler"]
         self.metadatos = artefacto["metadatos"]
+        self._pesos = artefacto.get("pesos")
+        # Compatibilidad con artefactos del formato antiguo, que guardaban los
+        # objetos de scikit-learn serializados.
+        self._modelo = artefacto.get("modelo")
+        self._scaler = artefacto.get("scaler")
+        if self._pesos is None and self._modelo is None:
+            raise ValueError(
+                "El artefacto no contiene ni 'pesos' ni 'modelo'; no es un modelo "
+                "de acp-classifier."
+            )
         self._embedder: Esm2Embedder | None = None
 
     @staticmethod
@@ -66,7 +86,9 @@ class AcpClassifier:
 
     def probabilidades(self, secuencias, tamano_lote: int = 32) -> np.ndarray:
         X = self.embedder(secuencias, tamano_lote=tamano_lote)
-        return self.modelo.predict_proba(self.scaler.transform(X))[:, 1]
+        if self._pesos is not None:
+            return _probabilidades_desde_pesos(X, self._pesos)
+        return self._modelo.predict_proba(self._scaler.transform(X))[:, 1]
 
     def predecir_secuencias(
         self,

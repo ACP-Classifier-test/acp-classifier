@@ -3,6 +3,27 @@
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [SemVer](https://semver.org/lang/es/).
 
+## [1.0.0] — 2026-09-24
+
+Primera versión publicada en PyPI.
+
+### Cambiado
+
+- El artefacto del modelo guarda ahora los **pesos como arrays de NumPy** (coeficientes,
+  intercepto, media y escala) en lugar de objetos de scikit-learn serializados con pickle.
+  La predicción se calcula directamente y **ya no depende de la versión de scikit-learn**
+  instalada, lo que elimina los avisos `InconsistentVersionWarning` y el riesgo de que una
+  versión futura de la biblioteca impidiera cargar el modelo. Las predicciones son idénticas:
+  AUC-ROC 0.8745, F1 0.6230, exactitud 0.8362 y MCC 0.5341 sobre el conjunto de prueba
+  independiente, los mismos valores que reporta el trabajo de grado.
+- **`scikit-learn` deja de ser una dependencia de ejecución.** Pasa a los extras `[dev]`,
+  donde lo necesita `entrenar_modelo.py`. El paquete instalado requiere ahora únicamente
+  `numpy`, `joblib`, `torch` y `transformers`.
+- La licencia se declara mediante expresión SPDX (`license = "MIT"`), conforme a la PEP 639.
+
+Los artefactos en el formato anterior siguen cargándose correctamente, siempre que
+`scikit-learn` esté disponible en el entorno.
+
 ## [1.0.0] — 2026-09-07
 
 Primera versión publicable. Corresponde al modelo final del trabajo de grado.

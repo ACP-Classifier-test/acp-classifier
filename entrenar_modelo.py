@@ -127,7 +127,8 @@ def main() -> int:
     for k, m in resultados.items():
         print(f"  {k:<12}{m['auc_roc']:>10}{m['f1']:>10}{m['mcc']:>10}")
     print("\n  Referencia reportada en el trabajo (pooling 'tesis'): AUC-ROC 0.8745")
-    print("  Referencia mACPpred 2.0 sobre el mismo conjunto:      AUC-ROC 0.817")
+    print("  Referencia mACPpred 2.0 sobre el mismo conjunto:      AUC-ROC 0.887")
+    print("  Referencia MLACP 2.0 sobre el mismo conjunto:         AUC-ROC 0.893")
 
     # Se distribuye la variante reportada en el documento, para que el paquete
     # coincida exactamente con las métricas defendidas en el trabajo de grado.
