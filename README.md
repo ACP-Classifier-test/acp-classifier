@@ -50,7 +50,7 @@ pip install acp-classifier
 Desde el código fuente:
 
 ```bash
-git clone https://github.com/ivan2171977/acp-classifier.git
+git clone https://github.com/ACP-Classifier-test/acp-classifier.git
 cd acp-classifier
 pip install -e .
 ```
@@ -194,7 +194,7 @@ no-ACPs para entrenamiento; 610 ACPs y 2.760 no-ACPs para prueba independiente.
   author = {Navarro Sinuco, Brayan Arturo and Mendoza Oñate, Ivan Andres},
   year   = {2026},
   school = {Universidad Industrial de Santander},
-  url    = {https://github.com/ivan2171977/acp-classifier}
+  url    = {https://github.com/ACP-Classifier-test/acp-classifier}
 }
 ```
 

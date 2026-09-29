@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acp-classifier"
-version = "1.0.0"
+version = "1.0.1"
 description = "Clasificación de péptidos anticancerígenos (ACPs) mediante modelos de lenguaje proteico"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -43,9 +43,9 @@ dependencies = [
 dev = ["pytest>=7.0", "scikit-learn>=1.0"]
 
 [project.urls]
-Homepage = "https://github.com/ivan2171977/acp-classifier"
-Repository = "https://github.com/ivan2171977/acp-classifier"
-Issues = "https://github.com/ivan2171977/acp-classifier/issues"
+Homepage = "https://github.com/ACP-Classifier-test/acp-classifier"
+Repository = "https://github.com/ACP-Classifier-test/acp-classifier"
+Issues = "https://github.com/ACP-Classifier-test/acp-classifier/issues"
 
 [project.scripts]
 acp-classifier = "acp_classifier.cli:main"

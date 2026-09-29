@@ -3,6 +3,17 @@
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [SemVer](https://semver.org/lang/es/).
 
+## [1.0.1] — 2026-09-29
+
+Cambio de ubicación del repositorio. No hay cambios en el código, en el modelo
+ni en los resultados: la predicción es idéntica a la de la 1.0.0.
+
+### Cambiado
+
+- El proyecto pasa a alojarse en una organización propia. Se actualizan las
+  seis declaraciones de la URL del repositorio en `pyproject.toml` (Homepage,
+  Repository, Issues), `README.md` y `CITATION.cff`.
+
 ## [1.0.0] — 2026-09-24
 
 Primera versión publicada en PyPI.

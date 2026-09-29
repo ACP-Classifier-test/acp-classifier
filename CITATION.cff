@@ -13,10 +13,10 @@ authors:
   - family-names: Mendoza Oñate
     given-names: Ivan Andres
     affiliation: Universidad Industrial de Santander
-repository-code: https://github.com/ivan2171977/acp-classifier
+repository-code: https://github.com/ACP-Classifier-test/acp-classifier
 license: MIT
-version: 1.0.0
-date-released: "2026-09-07"
+version: 1.0.1
+date-released: "2026-09-29"
 keywords:
   - bioinformatics
   - anticancer peptides
