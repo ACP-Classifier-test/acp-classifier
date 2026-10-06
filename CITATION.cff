@@ -15,8 +15,8 @@ authors:
     affiliation: Universidad Industrial de Santander
 repository-code: https://github.com/ACP-Classifier-test/acp-classifier
 license: MIT
-version: 1.0.1
-date-released: "2026-09-29"
+version: 1.0.2
+date-released: "2026-10-06"
 keywords:
   - bioinformatics
   - anticancer peptides

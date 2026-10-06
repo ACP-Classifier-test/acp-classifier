@@ -1,13 +1,27 @@
+# conda env create -f environment.yml
+# conda activate acp-classifier
+#
+# Dos decisiones deliberadas, ambas para no arrastrar CUDA:
+#
+#   1. `pytorch-cpu` en lugar de `pytorch`. El metapaquete `pytorch` resuelve en
+#      Linux hacia la variante de GPU, que trae el runtime de CUDA y triton.
+#   2. `--no-deps` en la sección de pip. Sin esa bandera, pip reinstalaría
+#      `torch` desde PyPI —con CUDA incluido— encima del `pytorch-cpu` que
+#      acaba de poner conda. Todas las dependencias del paquete ya quedan
+#      resueltas por conda en la lista de arriba.
+#
+# La versión de Python está fijada: es la que usa la integración continua y la
+# que tiene cobertura de ruedas en todas las dependencias.
 name: acp-classifier
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python>=3.9
-  - numpy>=1.21
-  - joblib>=1.1
-  - pytorch>=1.11
+  - python=3.11
+  - numpy>=1.24
+  - joblib>=1.3
+  - pytorch-cpu>=2.2
+  - transformers>=4.40
   - pip
   - pip:
-      - transformers>=4.20
+      - --no-deps
       - acp-classifier

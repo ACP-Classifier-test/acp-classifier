@@ -1,0 +1,29 @@
+# Entorno de CPU reproducible para acp-classifier.
+#
+#   pip install -r requirements-cpu.txt
+#   pip install acp-classifier          # o, desde el código fuente: pip install -e .
+#
+# Por qué este archivo existe
+# ---------------------------
+# En Linux, la rueda de `torch` publicada en PyPI declara como OBLIGATORIAS
+# `triton` y los paquetes `nvidia-cu13` (cuDNN, NCCL, cuSPARSELt, nvSHMEM):
+# unos 2 GB de runtime de CUDA que este paquete no usa, porque la inferencia
+# corre en CPU. Si en la máquina no está el CUDA Toolkit, la instalación o el
+# primer `import torch` fallan con el error
+#
+#     fatal error: cuda.h: No such file or directory
+#
+# El índice de PyTorch se declara como índice PRINCIPAL para que pip prefiera
+# las ruedas con versión local `+cpu`: según la PEP 440, `2.14.1+cpu` ordena
+# por encima de `2.14.1`, así que gana frente a la rueda de PyPI. PyPI queda
+# como índice secundario para el resto de los paquetes.
+#
+# La rueda `+cpu` no declara ninguna dependencia de NVIDIA ni de triton.
+
+--index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://pypi.org/simple
+
+torch>=2.2
+numpy>=1.24
+joblib>=1.3
+transformers>=4.40

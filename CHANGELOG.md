@@ -3,6 +3,47 @@
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [SemVer](https://semver.org/lang/es/).
 
+## [1.0.2] — 2026-10-06
+
+Corrección del entorno de instalación. No hay cambios en el código, en el
+modelo ni en los resultados: la predicción es idéntica a la de la 1.0.1.
+
+### Corregido
+
+- **La instalación en Linux ya no arrastra CUDA.** La rueda de `torch` publicada
+  en PyPI declara como dependencias obligatorias `triton` y cuatro paquetes
+  `nvidia-cu13` (cuDNN, NCCL, cuSPARSELt, nvSHMEM), unos 2 GB de runtime que el
+  paquete no usa porque la inferencia corre en CPU. En una máquina sin el CUDA
+  Toolkit eso terminaba en `fatal error: cuda.h: No such file or directory`. Se
+  añade `requirements-cpu.txt`, que declara el índice de ruedas de CPU de PyTorch
+  como índice principal: las ruedas `+cpu` no declaran ninguna de esas cinco
+  dependencias y, por la PEP 440, `2.14.1+cpu` ordena por encima de `2.14.1`, así
+  que `pip` las prefiere frente a las de PyPI.
+- **`environment.yml` usa `pytorch-cpu` en lugar de `pytorch`.** El metapaquete
+  `pytorch` de conda-forge resuelve en Linux hacia la variante de GPU. La sección
+  de pip pasa a usar `--no-deps`, porque sin esa bandera reinstalaba `torch`
+  desde PyPI —con CUDA— encima del `pytorch-cpu` recién puesto por conda.
+
+### Cambiado
+
+- **El rango de versiones de Python pasa de `>=3.9` a `>=3.10,<3.15`.** PyTorch
+  dejó de publicar ruedas para 3.9 tras la serie 2.8, de modo que el rango
+  anterior permitía crear entornos en los que `pip` intentaba compilar PyTorch
+  desde el código fuente, con el mismo error de `cuda.h`. El límite superior
+  evita el caso simétrico en versiones de Python todavía sin ruedas. Ahora `pip`
+  rechaza el entorno incompatible antes de descargar nada.
+- Se añade `.python-version` con `3.11`, la versión de referencia del proyecto.
+- Los pisos de las dependencias suben a los primeros con ruedas en todo el rango
+  admitido: `numpy>=1.24`, `joblib>=1.3`, `torch>=2.2` y `transformers>=4.40`.
+- El README documenta la versión de Python exigida, la instalación por la vía de
+  CPU y una sección de diagnóstico para los errores de `triton`, `cuda.h` y los
+  paquetes `nvidia-*`.
+- La integración continua amplía la matriz a Python 3.10–3.14 y añade una corrida
+  en Windows y otra en macOS. Dos guardas nuevas: una falla si en el entorno
+  aparecen `triton` o paquetes `nvidia-*`, o si en Linux la rueda de `torch` no es
+  `+cpu`; la otra comprueba que la instalación en Python 3.9 se rechaza con un
+  mensaje claro.
+
 ## [1.0.1] — 2026-09-29
 
 Cambio de ubicación del repositorio. No hay cambios en el código, en el modelo

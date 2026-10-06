@@ -43,27 +43,152 @@ millones de parámetros y un clasificador lineal, sin GPU en inferencia.
 
 ## Instalación
 
+### Versión de Python
+
+| | |
+|---|---|
+| **Admitidas** | 3.10, 3.11, 3.12, 3.13 y 3.14 |
+| **Recomendada** | **3.11** — es la que fija `.python-version`, la que usa la integración continua y la que tiene ruedas precompiladas de todas las dependencias en las tres plataformas |
+| **No admitidas** | 3.9 o anterior (PyTorch dejó de publicar ruedas tras la serie 2.8) y 3.15 o posterior (sin cobertura verificada) |
+
+El rango está declarado en los metadatos del paquete, así que `pip` rechaza una
+versión incompatible con un mensaje claro en vez de intentar compilar PyTorch
+desde el código fuente, que es lo que termina en el error de `cuda.h` descrito
+más abajo.
+
+### Instalación recomendada (CPU)
+
+El paquete corre en CPU; no necesita GPU ni el CUDA Toolkit. Conviene instalar
+PyTorch desde el índice de ruedas de CPU **antes** que el paquete, para que no
+se descargue el runtime de CUDA:
+
 ```bash
+python3.11 -m venv .venv
+source .venv/bin/activate          # en Windows: .venv\Scripts\activate
+
+pip install -r https://raw.githubusercontent.com/ACP-Classifier-test/acp-classifier/main/requirements-cpu.txt
 pip install acp-classifier
 ```
 
-Desde el código fuente:
+Desde una copia del repositorio:
 
 ```bash
 git clone https://github.com/ACP-Classifier-test/acp-classifier.git
 cd acp-classifier
+
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements-cpu.txt
 pip install -e .
 ```
 
-Con Conda:
+### Con Conda
 
 ```bash
 conda env create -f environment.yml
 conda activate acp-classifier
 ```
 
-Requiere Python 3.9 o superior. La primera ejecución descarga el modelo ESM-2 8M
-(~31 MB) desde HuggingFace y lo deja en caché local.
+El archivo fija `python=3.11` y usa `pytorch-cpu`, no `pytorch`: el segundo
+resuelve en Linux hacia la variante de GPU.
+
+### Instalación rápida
+
+```bash
+pip install acp-classifier
+```
+
+Funciona en Windows y macOS, donde la rueda de PyPI no declara dependencias de
+CUDA. **En Linux arrastra unos 2 GB de CUDA** que el paquete no usa, por el
+motivo que se explica a continuación.
+
+La primera ejecución descarga el modelo ESM-2 8M (~31 MB) desde HuggingFace y lo
+deja en caché local.
+
+### Plataformas verificadas
+
+Hay ruedas precompiladas de `torch` en el índice de CPU para las cinco versiones
+de Python admitidas, tanto en Linux (`manylinux_2_28_x86_64`) como en Windows
+(`win_amd64`), y ninguna de ellas declara dependencias de CUDA. La integración
+continua instala y ejecuta la suite completa en esta matriz:
+
+| Sistema | Python | Vía de instalación |
+|---|---|---|
+| Linux x86_64 | 3.10, 3.11, 3.12, 3.13, 3.14 | `requirements-cpu.txt` |
+| Windows AMD64 | 3.11 | `requirements-cpu.txt` |
+| macOS arm64 | 3.11 | `requirements-cpu.txt` |
+
+Cada corrida comprueba además que en el entorno no haya quedado `triton` ni
+ningún paquete `nvidia-*`, y que en Linux la rueda de `torch` sea la `+cpu`.
+
+## Problemas de instalación
+
+### Errores de CUDA, `triton` o `cuda.h`
+
+Los tres síntomas más frecuentes son:
+
+- `fatal error: cuda.h: No such file or directory`
+- `ModuleNotFoundError: No module named 'triton'`
+- la instalación descarga varios paquetes `nvidia-*` de cientos de megabytes
+
+Tienen el mismo origen. En **Linux**, la rueda de `torch` publicada en PyPI
+declara como dependencias **obligatorias** `triton` y cuatro paquetes del
+runtime de CUDA. Así las declara, por ejemplo, `torch` 2.14.1:
+
+```
+nvidia-cudnn-cu13      ; platform_system == "Linux"
+nvidia-cusparselt-cu13 ; platform_system == "Linux"
+nvidia-nccl-cu13       ; platform_system == "Linux"
+nvidia-nvshmem-cu13    ; platform_system == "Linux"
+triton~=3.8.0          ; platform_system == "Linux" and python_version < "3.15"
+```
+
+No son opcionales: un `pip install torch` las instala siempre, aunque la máquina
+no tenga GPU. Si falta el CUDA Toolkit, `triton` falla al compilar sus kernels y
+aparece el error de `cuda.h`. Si además la versión de Python no tiene rueda
+precompilada, `pip` intenta construir PyTorch desde el código fuente y el mismo
+error aparece durante la instalación.
+
+Los cinco marcadores dependen de `platform_system == "Linux"`, así que **el
+problema es exclusivo de Linux**: en Windows y macOS la rueda de PyPI no declara
+ninguna dependencia de CUDA. Eso explica por qué la misma instalación funciona en
+un computador y falla en otro.
+
+**Solución.** Instalar PyTorch desde el índice de CPU, cuyas ruedas `+cpu` no
+declaran ninguna de esas cinco dependencias:
+
+```bash
+pip uninstall -y torch triton
+pip install -r requirements-cpu.txt
+```
+
+O, en un solo comando:
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+Para comprobar que el entorno quedó limpio:
+
+```bash
+python -c "import torch; print(torch.__version__)"   # debe terminar en '+cpu' en Linux
+pip list | grep -Ei "triton|nvidia"                  # no debe devolver nada
+```
+
+### `ERROR: Package 'acp-classifier' requires a different Python`
+
+La versión de Python del entorno está fuera del rango admitido. Crear un entorno
+con 3.11:
+
+```bash
+python3.11 -m venv .venv && source .venv/bin/activate
+```
+
+### El modelo tarda en la primera ejecución
+
+Es la descarga de los pesos de ESM-2 8M (~31 MB) desde HuggingFace. Quedan en
+caché (`~/.cache/huggingface`) y las ejecuciones siguientes no vuelven a bajarlos.
 
 ## Uso desde consola
 
@@ -165,6 +290,7 @@ Toma alrededor de un minuto sobre CPU.
 ## Pruebas
 
 ```bash
+pip install -r requirements-cpu.txt
 pip install -e ".[dev]"
 pytest -q
 ```

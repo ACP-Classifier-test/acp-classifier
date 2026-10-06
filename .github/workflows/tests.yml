@@ -9,11 +9,19 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          # Una corrida en Windows y otra en macOS para detectar roturas
+          # específicas de plataforma en la instalación.
+          - os: windows-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.11"
 
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +31,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+          cache-dependency-path: requirements-cpu.txt
 
       # El modelo ESM-2 8M (~31 MB) se descarga de HuggingFace en la primera
       # ejecución. Se cachea para no volver a bajarlo en cada corrida.
@@ -32,21 +41,81 @@ jobs:
           path: ~/.cache/huggingface
           key: hf-esm2-8m-${{ runner.os }}
 
-      # La rueda de PyPI arrastra CUDA (~2 GB). En CI basta la variante de CPU.
-      - name: Instalar PyTorch (CPU)
-        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      # En Linux, la rueda de torch de PyPI declara triton y los paquetes
+      # nvidia-cu13 como dependencias obligatorias (~2 GB de CUDA que este
+      # paquete no usa, y que fallan con "cuda.h: No such file or directory"
+      # si no está el CUDA Toolkit). requirements-cpu.txt fuerza las ruedas
+      # "+cpu", que no declaran ninguna de esas dependencias.
+      - name: Instalar las dependencias (ruedas de CPU)
+        run: pip install -r requirements-cpu.txt
 
       - name: Instalar el paquete
         run: pip install -e ".[dev]"
+
+      # Guarda de regresión: si un cambio futuro en los requisitos vuelve a
+      # arrastrar CUDA, esta comprobación falla aquí y no en la máquina de
+      # quien instala el paquete.
+      - name: Comprobar que no se instaló CUDA ni triton
+        shell: bash
+        run: |
+          python - <<'PY'
+          import sys
+          from importlib.metadata import distributions
+
+          nombres = sorted(d.metadata["Name"] or "" for d in distributions())
+          intrusos = [n for n in nombres if "triton" in n.lower() or n.lower().startswith("nvidia")]
+
+          import torch
+          print(f"torch {torch.__version__}")
+
+          if intrusos:
+              print("FALLO: el entorno de CPU arrastró paquetes de CUDA:", file=sys.stderr)
+              for n in intrusos:
+                  print(f"  - {n}", file=sys.stderr)
+              sys.exit(1)
+
+          if sys.platform == "linux" and "+cpu" not in torch.__version__:
+              print(
+                  f"FALLO: se esperaba una rueda '+cpu' en Linux, no {torch.__version__}",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print("OK: sin triton ni paquetes nvidia-*")
+          PY
 
       - name: Ejecutar las pruebas
         run: pytest -q
 
       - name: Comprobar la CLI de extremo a extremo
+        shell: bash
         run: |
           acp-classifier --version
-          acp-classifier -i examples/ejemplo.fasta -o /tmp/salida.csv
-          head -n 3 /tmp/salida.csv
+          acp-classifier -i examples/ejemplo.fasta -o salida.csv
+          head -n 3 salida.csv
+
+  # Comprueba que los metadatos rechazan las versiones de Python sin ruedas,
+  # en lugar de dejar que pip intente compilar torch desde el código fuente
+  # (que es lo que acaba en el error de cuda.h).
+  version-de-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: La instalación en Python 3.9 debe rechazarse con un mensaje claro
+        run: |
+          set -o pipefail
+          if pip install -e . > salida.txt 2>&1; then
+            echo "FALLO: la instalación en Python 3.9 debería haber sido rechazada" >&2
+            cat salida.txt
+            exit 1
+          fi
+          cat salida.txt
+          grep -qiE "requires-python|requires a different python|python_requires|supported python" salida.txt
 
   build:
     runs-on: ubuntu-latest
@@ -55,7 +124,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: .python-version
 
       - name: Construir la distribución
         run: |
