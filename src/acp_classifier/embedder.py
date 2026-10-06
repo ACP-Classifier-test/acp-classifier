@@ -49,6 +49,7 @@ class Esm2Embedder:
     def __init__(self, pooling: Pooling = "tesis", dispositivo: str | None = None):
         import torch
         from transformers import AutoModel, AutoTokenizer
+        from transformers import logging as transformers_logging
 
         if pooling not in ("tesis", "estricto"):
             raise ValueError(f"pooling debe ser 'tesis' o 'estricto', no {pooling!r}")
@@ -58,7 +59,31 @@ class Esm2Embedder:
         self.dispositivo = dispositivo or ("cuda" if torch.cuda.is_available() else "cpu")
 
         self.tokenizer = AutoTokenizer.from_pretrained(MODELO)
-        self.model = AutoModel.from_pretrained(MODELO).to(self.dispositivo).eval()
+
+        # El punto de control publicado por HuggingFace es el del modelo de lenguaje
+        # enmascarado, mientras que aquí solo se emplea el codificador. Al cargarlo,
+        # transformers emite un informe que marca como UNEXPECTED los pesos de
+        # `lm_head` —que este paquete no usa— y como MISSING los del `pooler`, que
+        # inicializaría al azar. Ninguna de las dos cosas altera el resultado: el
+        # promediado se hace a mano en __call__ y el `pooler` nunca se invoca. Pero
+        # el informe aparece en rojo en cada ejecución y aparenta un problema.
+        #
+        # `add_pooling_layer=False` evita construir esa capa inútil, que es la causa
+        # real de la mitad del aviso. El resto del informe se silencia solo durante
+        # la carga, restaurando después el nivel previo para no ocultar advertencias
+        # legítimas que transformers emita más adelante.
+        nivel_previo = transformers_logging.get_verbosity()
+        transformers_logging.set_verbosity_error()
+        try:
+            modelo = AutoModel.from_pretrained(MODELO, add_pooling_layer=False)
+        except TypeError:
+            # Algún backend de transformers podría no admitir ese argumento.
+            # El aviso reaparecería, pero la predicción es la misma.
+            modelo = AutoModel.from_pretrained(MODELO)
+        finally:
+            transformers_logging.set_verbosity(nivel_previo)
+
+        self.model = modelo.to(self.dispositivo).eval()
 
     def __call__(self, secuencias: Iterable[str], tamano_lote: int = 32) -> np.ndarray:
         secuencias = list(secuencias)
