@@ -5,10 +5,19 @@
 #
 #   1. `pytorch-cpu` en lugar de `pytorch`. El metapaquete `pytorch` resuelve en
 #      Linux hacia la variante de GPU, que trae el runtime de CUDA y triton.
-#   2. `--no-deps` en la sección de pip. Sin esa bandera, pip reinstalaría
-#      `torch` desde PyPI —con CUDA incluido— encima del `pytorch-cpu` que
-#      acaba de poner conda. Todas las dependencias del paquete ya quedan
-#      resueltas por conda en la lista de arriba.
+#   2. El índice de ruedas de CPU de PyTorch declarado en la sección de pip.
+#      `conda env create` vuelca esas líneas a un requirements.txt temporal y
+#      ejecuta `pip install -U -r`; por culpa de ese `-U`, pip intentaría
+#      actualizar `torch` desde PyPI —con CUDA incluido— encima del
+#      `pytorch-cpu` que acaba de poner conda. Declarando el índice de CPU como
+#      principal, cualquier resolución de `torch` cae en la rueda `+cpu`, que no
+#      declara dependencias de CUDA. PyPI queda como índice secundario, que es
+#      donde vive `acp-classifier`.
+#
+#      Aquí había antes un `--no-deps`, que NO es una opción admitida dentro de
+#      un archivo de requisitos —solo lo es en la línea de comandos— y hacía
+#      fallar la creación del entorno con
+#      «ERROR: Invalid requirement: --no-deps».
 #
 # La versión de Python está fijada: es la que usa la integración continua y la
 # que tiene cobertura de ruedas en todas las dependencias.
@@ -23,5 +32,6 @@ dependencies:
   - transformers>=4.40
   - pip
   - pip:
-      - --no-deps
+      - --index-url https://download.pytorch.org/whl/cpu
+      - --extra-index-url https://pypi.org/simple
       - acp-classifier
