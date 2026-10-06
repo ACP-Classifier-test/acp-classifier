@@ -38,6 +38,18 @@ modelo ni en los resultados: la predicción es idéntica a la de la 1.0.1.
 - El README documenta la versión de Python exigida, la instalación por la vía de
   CPU y una sección de diagnóstico para los errores de `triton`, `cuda.h` y los
   paquetes `nvidia-*`.
+- **El README pasa a ser la referencia vigente de instalación y uso**, y explica
+  su discrepancia con el Apéndice A del documento de grado, que fue entregado
+  describiendo las versiones 1.0.0 y 1.0.1 y por tanto indica «Python 3.9 o
+  superior». Se añaden una nota inicial —visible también en la página de PyPI,
+  porque `pyproject.toml` declara `readme = "README.md"`—, un apartado con el
+  motivo técnico del cambio de rango y la cobertura real de la integración
+  continua, y el apartado de rendimiento del Apéndice A.6, que faltaba. Con ello
+  el README cubre todo el manual del documento y además la vía de instalación por
+  el índice de CPU, que el documento no menciona.
+- Se añade el flujo `publicar.yml`, que publica en PyPI mediante *trusted
+  publishing* (OIDC) al empujar una etiqueta `vX.Y.Z`, sin tokens almacenados, y
+  aborta si la versión de la etiqueta no coincide con la de `pyproject.toml`.
 - La integración continua amplía la matriz a Python 3.10–3.14 y añade una corrida
   en Windows y otra en macOS. Dos guardas nuevas: una falla si en el entorno
   aparecen `triton` o paquetes `nvidia-*`, o si en Linux la rueda de `torch` no es
