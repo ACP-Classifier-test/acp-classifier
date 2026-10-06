@@ -47,7 +47,7 @@ modelo ni en los resultados: la predicción es idéntica a la de la 1.0.1.
   continua, y el apartado de rendimiento del Apéndice A.6, que faltaba. Con ello
   el README cubre todo el manual del documento y además la vía de instalación por
   el índice de CPU, que el documento no menciona.
-- Se añade el flujo `publicar.yml`, que publica en PyPI mediante *trusted
+- Se añade el flujo `Publicar.yml`, que publica en PyPI mediante *trusted
   publishing* (OIDC) al empujar una etiqueta `vX.Y.Z`, sin tokens almacenados, y
   aborta si la versión de la etiqueta no coincide con la de `pyproject.toml`.
 - La integración continua amplía la matriz a Python 3.10–3.14 y añade una corrida
