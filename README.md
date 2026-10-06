@@ -7,6 +7,12 @@ mediante representaciones contextuales generadas por el modelo de lenguaje prote
 Desarrollado como trabajo de grado en la Escuela de Ingeniería de Sistemas e Informática de
 la **Universidad Industrial de Santander**.
 
+> **Nota para quien venga del documento de grado.** El Apéndice A del documento indica
+> «Python 3.9 o superior». Desde la versión **1.0.2** el rango admitido es **3.10 a 3.14**,
+> por el motivo que se explica en [Versión de Python](#versión-de-python). Este README,
+> versionado junto al código, es la referencia vigente sobre instalación y uso: el
+> documento describe el estado del paquete en el momento de su entrega.
+
 ---
 
 ## Por qué existe
@@ -55,6 +61,29 @@ El rango está declarado en los metadatos del paquete, así que `pip` rechaza un
 versión incompatible con un mensaje claro en vez de intentar compilar PyTorch
 desde el código fuente, que es lo que termina en el error de `cuda.h` descrito
 más abajo.
+
+#### Por qué cambió respecto del documento de grado
+
+El Apéndice A del documento de grado indica «Python 3.9 o superior», que era el
+rango declarado por las versiones 1.0.0 y 1.0.1. Resultó ser incorrecto en la
+práctica: PyTorch dejó de publicar ruedas precompiladas para Python 3.9 tras la
+serie 2.8, de modo que en un entorno 3.9 `pip` no encontraba rueda, intentaba
+compilar PyTorch desde el código fuente y la instalación terminaba en
+
+```
+fatal error: cuda.h: No such file or directory
+```
+
+El rango se corrigió a `>=3.10,<3.15` en la versión 1.0.2. El límite inferior
+excluye las versiones sin ruedas; el superior evita el mismo problema en
+versiones de Python todavía no cubiertas. Con ello `pip` rechaza el entorno
+incompatible antes de descargar nada, en lugar de fallar a mitad de la
+compilación con un error que no apunta a su causa.
+
+Por el mismo motivo, la integración continua que el documento describe sobre
+«Python 3.9, 3.10 y 3.11» cubre hoy **3.10 a 3.14 en Linux, más una corrida en
+Windows y otra en macOS**, y verifica además que la instalación en 3.9 se
+rechace con un mensaje claro.
 
 ### Instalación recomendada (CPU)
 
@@ -276,6 +305,21 @@ dimensionalidad no aportan poder discriminante y favorecen el sobreajuste.
 
 Esto tiene una consecuencia práctica: el modelo con mejor desempeño es también el de menores
 requisitos (31 MB frente a los 1,7 GB de ProtBERT), lo que permite ejecutarlo sin GPU.
+
+## Rendimiento
+
+Medido sobre un procesador AMD Ryzen 7 de ocho núcleos, sin GPU:
+
+| Operación | Tiempo |
+|---|---|
+| Carga del modelo | 1,22 s |
+| Clasificación de 100 péptidos, con el modelo ya cargado | 0,52 s |
+| Proceso completo desde consola, incluido el arranque | 9,7 – 10,1 s |
+| Rendimiento sostenido | ~193 péptidos/s |
+
+La diferencia entre los 0,52 s de clasificación y los cerca de diez del proceso completo
+corresponde al tiempo de importación de las bibliotecas de aprendizaje profundo, no al
+cálculo. En lotes grandes ese coste se paga una sola vez.
 
 ## Reproducir el entrenamiento
 
